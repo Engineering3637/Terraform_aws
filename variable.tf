@@ -5,3 +5,11 @@ variable "my_region" {
 variable "name" {
   default = "group1"
 }
+
+variable "group1_app_ami" {
+  default = "ami-1bd9c57f"
+}
+
+variable "group1_db_ami" {
+  default = "ami-1bd9c57f"
+}
