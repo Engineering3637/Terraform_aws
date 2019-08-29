@@ -1,14 +1,13 @@
 provider "aws" {
   region = "${var.my_region}"
+  # access_key = "{env.AWS_ACCESS_KEY_ID}"
+  # secret_key = "{env.AWS_SECRET_ACCESS_KEY}"
 }
-
-# data "aws_availability_zone" "zone_alpha" {
-#   name = "eu-west-1a"
-# }
 
 resource "aws_vpc" "group1_vpc" {
   cidr_block = "10.0.0.0/16"
-  instance_tenancy = "dedicated"
+  instance_tenancy = "default"
+  enable_dns_hostnames = true
   tags ={
     Name = "${var.name}-vpc"
   }
@@ -152,7 +151,7 @@ resource "aws_instance" "apple_instance" {
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "instance-alpha"
+    Name = "apple_instance"
   }
 }
 
@@ -162,7 +161,7 @@ resource "aws_instance" "banana_instance" {
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "instance-banana"
+    Name = "banana_instance"
   }
 }
 
@@ -172,7 +171,7 @@ resource "aws_instance" "grapes_instance" {
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "instance-grapes"
+    Name = "grapes_instance"
   }
 }
 
@@ -182,14 +181,21 @@ resource "aws_instance" "db_instance" {
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "instance-grapes"
+    Name = "db_instance"
   }
 }
 
-data "aws_internet_gateway" "default" {
-  filter {
-    name = "attachment.vpc-id"
-    values = ["${aws_vpc.group1_vpc.id}"]
+# data "aws_internet_gateway" "default" {
+#   filter {
+#     name = "attachment.vpc-id"
+#     values = ["${aws_vpc.group1_vpc.id}"]
+#   }
+# }
+
+resource "aws_internet_gateway" "internet_access" {
+  vpc_id = "${aws_vpc.group1_vpc.id}"
+  tags = {
+    Name = "main"
   }
 }
 
@@ -197,7 +203,7 @@ resource "aws_route_table" "route_table" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
   route {
     cidr_block = "0.0.0.0/0" #any traffic should go through gate way
-    gateway_id = "${data.aws_internet_gateway.default.id}"
+    gateway_id = "${aws_internet_gateway.internet_access.id}"
   }
   tags = {
     Name = "main_route"
