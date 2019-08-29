@@ -193,7 +193,7 @@ data "aws_internet_gateway" "default" {
   }
 }
 
-resource "aws_route_table" "public_route_table" {
+resource "aws_route_table" "route_table" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
   route {
     cidr_block = "0.0.0.0/0" #any traffic should go through gate way
@@ -206,15 +206,20 @@ resource "aws_route_table" "public_route_table" {
 
 resource "aws_route_table_association" "associate_route_table_alpha" {
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
-  route_table_id = "${aws_route_table.public_route_table.id}"
+  route_table_id = "${aws_route_table.route_table.id}"
 }
 
 resource "aws_route_table_association" "associate_route_table_beta" {
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
-  route_table_id = "${aws_route_table.public_route_table.id}"
+  route_table_id = "${aws_route_table.route_table.id}"
 }
 
 resource "aws_route_table_association" "associate_route_table_gamma" {
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
-  route_table_id = "${aws_route_table.public_route_table.id}"
+  route_table_id = "${aws_route_table.route_table.id}"
+}
+
+resource "aws_route_table_association" "associate_route_table_db" {
+  subnet_id = "${aws_subnet.private-subnet-db.id}"
+  route_table_id = "${aws_route_table.route_table.id}"
 }
