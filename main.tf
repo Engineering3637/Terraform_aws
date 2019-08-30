@@ -80,7 +80,7 @@ resource "aws_network_acl" "acl_public_sub" {
   }
   egress {
     protocol   = "tcp"
-    rule_no    = 102
+    rule_no    = 104
     action     = "allow"
     cidr_block = "10.0.13.0/24"
     from_port  = 27017
@@ -150,7 +150,7 @@ resource "aws_instance" "apple_instance" {
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
-  #user_data = "${data.template_file.app_init.rendered}"
+  user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "apple_instance"
   }
@@ -161,7 +161,7 @@ resource "aws_instance" "banana_instance" {
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
-  #user_data = "${data.template_file.app_init.rendered}"
+  user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "banana_instance"
   }
@@ -172,7 +172,7 @@ resource "aws_instance" "grapes_instance" {
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
-  #user_data = "${data.template_file.app_init.rendered}"
+  user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "grapes_instance"
   }
@@ -183,18 +183,12 @@ resource "aws_instance" "db_instance" {
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.private-subnet-db.id}"
-  #user_data = "${data.template_file.app_init.rendered}"
+  user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "db_instance"
   }
 }
 
-# data "aws_internet_gateway" "default" {
-#   filter {
-#     name = "attachment.vpc-id"
-#     values = ["${aws_vpc.group1_vpc.id}"]
-#   }
-# }
 
 resource "aws_internet_gateway" "internet_access" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
@@ -232,4 +226,8 @@ resource "aws_route_table_association" "associate_route_table_gamma" {
 resource "aws_route_table_association" "associate_route_table_db" {
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   route_table_id = "${aws_route_table.route_table.id}"
+}
+
+data "template_file" "app_init" {
+  template = "${file("./Script/app/init.sh.tpl")}"
 }
