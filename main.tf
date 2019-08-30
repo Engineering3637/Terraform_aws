@@ -53,7 +53,7 @@ resource "aws_subnet" "private-subnet-db" {
 resource "aws_network_acl" "acl_public_sub" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
 
-  egress {
+  ingress {
     protocol   = "tcp"
     rule_no    = 101
     action     = "allow"
@@ -61,16 +61,16 @@ resource "aws_network_acl" "acl_public_sub" {
     from_port  = 80
     to_port    = 80
   }
-  egress {
+  ingress {
     protocol   = "tcp"
     rule_no    = 102
     action     = "allow"
     cidr_block = "10.0.13.0/24"
-    from_port  = 27017
-    to_port    = 27017
+    from_port  = 1024
+    to_port    = 65535
   }
 
-  ingress {
+  egress {
     protocol   = "tcp"
     rule_no    = 103
     action     = "allow"
@@ -78,7 +78,7 @@ resource "aws_network_acl" "acl_public_sub" {
     from_port  = 80
     to_port    = 80
   }
-  ingress {
+  egress {
     protocol   = "tcp"
     rule_no    = 102
     action     = "allow"
@@ -94,7 +94,7 @@ resource "aws_network_acl" "acl_public_sub" {
 resource "aws_network_acl" "acl_private_sub" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
 
-  egress {
+  ingress {
     protocol   = "tcp"
     rule_no    = 110
     action     = "allow"
@@ -102,7 +102,7 @@ resource "aws_network_acl" "acl_private_sub" {
     from_port  = 27017
     to_port    = 27017
   }
-  egress {
+  ingress {
     protocol   = "tcp"
     rule_no    = 111
     action     = "allow"
@@ -110,7 +110,7 @@ resource "aws_network_acl" "acl_private_sub" {
     from_port  = 27017
     to_port    = 27017
   }
-  egress {
+  ingress {
       protocol   = "tcp"
       rule_no    = 112
       action     = "allow"
@@ -119,35 +119,36 @@ resource "aws_network_acl" "acl_private_sub" {
       to_port    = 27017
     }
 
-  ingress {
+  egress {
       protocol   = "tcp"
       rule_no    = 210
       action     = "allow"
       cidr_block = "10.0.10.0/24"
-      from_port  = 27017
-      to_port    = 27017
+      from_port  = 1024
+      to_port    = 65535
     }
-    ingress {
+    egress {
       protocol   = "tcp"
       rule_no    = 211
       action     = "allow"
       cidr_block = "10.0.11.0/24"
-      from_port  = 27017
-      to_port    = 27017
+      from_port  = 1024
+      to_port    = 65535
     }
-    ingress {
+    egress {
         protocol   = "tcp"
         rule_no    = 212
         action     = "allow"
         cidr_block = "10.0.12.0/24"
-        from_port  = 27017
-        to_port    = 27017
+        from_port  = 1024
+        to_port    = 65535
     }
 }
 
 resource "aws_instance" "apple_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
@@ -158,6 +159,7 @@ resource "aws_instance" "apple_instance" {
 resource "aws_instance" "banana_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
@@ -168,6 +170,7 @@ resource "aws_instance" "banana_instance" {
 resource "aws_instance" "grapes_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
@@ -178,6 +181,7 @@ resource "aws_instance" "grapes_instance" {
 resource "aws_instance" "db_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  associate_public_ip_address = true
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   #user_data = "${data.template_file.app_init.rendered}"
   tags = {
