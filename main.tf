@@ -120,6 +120,14 @@ resource "aws_network_acl" "acl_public_sub" {
     from_port  = 22
     to_port    = 22
   }
+  egress {
+    protocol   = "tcp"
+    rule_no    = 107
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
   tags = {
     Name = "acl_public_sub"
   }
@@ -301,6 +309,12 @@ resource "aws_security_group" "app_security_group" {
     egress {
       from_port   = 22
       to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+      from_port   = 1024
+      to_port     = 65535
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
