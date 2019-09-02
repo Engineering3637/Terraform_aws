@@ -159,7 +159,7 @@ resource "aws_instance" "apple_instance" {
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "apple_instance"
+    Name = "adam-apple_instance"
   }
 }
 
@@ -171,7 +171,7 @@ resource "aws_instance" "banana_instance" {
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "banana_instance"
+    Name = "adam-banana_instance"
   }
 }
 
@@ -183,7 +183,7 @@ resource "aws_instance" "grapes_instance" {
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
-    Name = "grapes_instance"
+    Name = "adam-grapes_instance"
   }
 }
 
@@ -232,7 +232,6 @@ resource "aws_security_group" "app_security_group" {
       Name = "public security group"
     }
   }
-
 
   resource "aws_security_group" "db_security_group" {
     name        = "db_security_group"
