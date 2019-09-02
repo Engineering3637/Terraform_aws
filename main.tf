@@ -70,6 +70,23 @@ resource "aws_network_acl" "acl_public_sub" {
     from_port  = 1024
     to_port    = 65535
   }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 103
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 104
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
+
 
   egress {
     protocol   = "tcp"
@@ -86,6 +103,22 @@ resource "aws_network_acl" "acl_public_sub" {
     cidr_block = "10.0.13.0/24"
     from_port  = 27017
     to_port    = 27017
+  }
+  egress {
+    protocol   = "tcp"
+    rule_no    = 105
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+  egress {
+    protocol   = "tcp"
+    rule_no    = 106
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
   }
   tags = {
     Name = "acl_public_sub"
@@ -121,6 +154,14 @@ resource "aws_network_acl" "acl_private_sub" {
       from_port  = 27017
       to_port    = 27017
     }
+    # ingress {
+    #   protocol   = "https"
+    #   rule_no    = 113
+    #   action     = "allow"
+    #   cidr_block = "0.0.0.0/0"
+    #   from_port  = 443
+    #   to_port    = 443
+    # }
 
   egress {
       protocol   = "tcp"
@@ -146,6 +187,14 @@ resource "aws_network_acl" "acl_private_sub" {
         from_port  = 1024
         to_port    = 65535
     }
+    # egress {
+    #   protocol   = "https"
+    #   rule_no    = 213
+    #   action     = "allow"
+    #   cidr_block = "0.0.0.0/0"
+    #   from_port  = 443
+    #   to_port    = 443
+    # }
     tags = {
       Name = "acl_private_sub"
     }
@@ -154,6 +203,7 @@ resource "aws_network_acl" "acl_private_sub" {
 resource "aws_instance" "apple_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
@@ -166,6 +216,7 @@ resource "aws_instance" "apple_instance" {
 resource "aws_instance" "banana_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
@@ -178,6 +229,7 @@ resource "aws_instance" "banana_instance" {
 resource "aws_instance" "grapes_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
@@ -190,6 +242,7 @@ resource "aws_instance" "grapes_instance" {
 resource "aws_instance" "db_instance" {
   ami = "${var.group1_app_ami}"
   instance_type = "t2.micro"
+  key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   vpc_security_group_ids = ["${aws_security_group.db_security_group.id}"]
@@ -215,6 +268,18 @@ resource "aws_security_group" "app_security_group" {
     protocol    = "tcp"
     cidr_blocks = ["10.0.13.0/24"]
   }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
     egress {
       from_port   = 80
       to_port     = 80
@@ -226,6 +291,18 @@ resource "aws_security_group" "app_security_group" {
       to_port     = 27017
       protocol    = "tcp"
       cidr_blocks = ["10.0.13.0/24"]
+    }
+    egress {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
     }
 
     tags = {
