@@ -49,6 +49,13 @@ resource "aws_subnet" "private-subnet-db" {
   }
 }
 
+resource "aws_subnet" "public-subnet-elk" {
+  vpc_id = "${aws_vpc.group1_vpc.id}"
+  cidr_block = "10.0.14.0/24"
+  tags = {
+    Name = "elk_public_subnet"
+  }
+}
 
 resource "aws_network_acl" "acl_public_sub" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
@@ -133,6 +140,43 @@ resource "aws_network_acl" "acl_public_sub" {
   }
 }
 
+#elk subnet acl
+
+resource "aws_network_acl" "acl_public_elk" {
+  vpc_id = "${aws_vpc.group1_vpc.id}"
+  subnet_ids = ["${aws_subnet.public-subnet-elk.id}"]
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 101
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 9200
+    to_port    = 9300
+  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 102
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 5430
+    to_port    = 5430
+  }
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 103
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = "acl_public_elk"
+  }
+}
+
 resource "aws_network_acl" "acl_private_sub" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
   subnet_ids = ["${aws_subnet.private-subnet-db.id}"]
@@ -162,14 +206,6 @@ resource "aws_network_acl" "acl_private_sub" {
       from_port  = 27017
       to_port    = 27017
     }
-    # ingress {
-    #   protocol   = "https"
-    #   rule_no    = 113
-    #   action     = "allow"
-    #   cidr_block = "0.0.0.0/0"
-    #   from_port  = 443
-    #   to_port    = 443
-    # }
 
   egress {
       protocol   = "tcp"
@@ -195,14 +231,7 @@ resource "aws_network_acl" "acl_private_sub" {
         from_port  = 1024
         to_port    = 65535
     }
-    # egress {
-    #   protocol   = "https"
-    #   rule_no    = 213
-    #   action     = "allow"
-    #   cidr_block = "0.0.0.0/0"
-    #   from_port  = 443
-    #   to_port    = 443
-    # }
+
     tags = {
       Name = "acl_private_sub"
     }
@@ -257,6 +286,17 @@ resource "aws_instance" "db_instance" {
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "db_instance"
+  }
+}
+#group 3 instance
+resource "aws_instance" "elk_instance" {
+  ami = "${var.ami}"
+  instance_type = "t2.micro"
+  subnet_id ="${aws_subnet.public-subnet-elk.id}"
+  vpc_security_group_ids = ["${aws_security_group.elk_security_group.id}"]
+  user_data = "${data.template_file.app_elk.rendered}"
+  tags = {
+    Name  = "elk-TeamELK"
   }
 }
 
@@ -362,6 +402,32 @@ resource "aws_security_group" "app_security_group" {
     }
   }
 
+  resource "aws_security_group" "elk_security_group" {
+    name = "elk_security_group"
+    description = "security group for ELK"
+    vpc_id = "${aws_vpc.group1_vpc.id}"
+    ingress {
+      from_port = 9200
+      to_port = 9300
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"] #cidr_block for elk sub
+    }
+    ingress {
+      from_port = 5430
+      to_port = 5430
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+      from_port = 0
+      to_port = 0
+      protocol = "-1" #-1 is all protocols
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    tags = {
+      Name  = "elk-security-group"
+    }
+  }
 
 resource "aws_internet_gateway" "internet_access" {
   vpc_id = "${aws_vpc.group1_vpc.id}"
@@ -401,6 +467,15 @@ resource "aws_route_table_association" "associate_route_table_db" {
   route_table_id = "${aws_route_table.route_table.id}"
 }
 
+resource "aws_route_table_association" "associate_route_table_elk" {
+  subnet_id = "${aws_subnet.public-subnet-elk.id}"
+  route_table_id = "${aws_route_table.route_table.id}"
+}
+
 data "template_file" "app_init" {
   template = "${file("./Script/app/init.sh.tpl")}"
+}
+
+data "template_file" "app_elk" {
+  template = "${file("./Script/app/elk_commands.sh.tpl")}"
 }
