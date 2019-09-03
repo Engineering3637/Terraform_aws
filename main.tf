@@ -62,79 +62,23 @@ resource "aws_network_acl" "acl_public_sub" {
   subnet_ids = ["${aws_subnet.public-subnet-alpha.id}","${aws_subnet.public-subnet-beta.id}","${aws_subnet.public-subnet-gamma.id}"]
 
   ingress {
-    protocol   = "tcp"
+    protocol   = "-1"
     rule_no    = 101
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
-  }
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 102
-    action     = "allow"
-    cidr_block = "10.0.13.0/24"
-    from_port  = 1024
-    to_port    = 65535
-  }
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 103
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 104
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 22
-    to_port    = 22
+    from_port  = 0
+    to_port    = 0
   }
 
-
   egress {
-    protocol   = "tcp"
-    rule_no    = 103
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 80
-    to_port    = 80
-  }
-  egress {
-    protocol   = "tcp"
-    rule_no    = 104
-    action     = "allow"
-    cidr_block = "10.0.13.0/24"
-    from_port  = 27017
-    to_port    = 27017
-  }
-  egress {
-    protocol   = "tcp"
-    rule_no    = 105
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 443
-    to_port    = 443
-  }
-  egress {
-    protocol   = "tcp"
-    rule_no    = 106
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 22
-    to_port    = 22
-  }
-  egress {
-    protocol   = "tcp"
+    protocol   = "-1"
     rule_no    = 107
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 1024
-    to_port    = 65535
+    from_port  = 0
+    to_port    = 0
   }
+
   tags = {
     Name = "acl_public_sub"
   }
@@ -292,6 +236,8 @@ resource "aws_instance" "db_instance" {
 resource "aws_instance" "elk_instance" {
   ami = "${var.ami}"
   instance_type = "t2.micro"
+  key_name = "DevOpsEngineering3637"
+  associate_public_ip_address = true
   subnet_id ="${aws_subnet.public-subnet-elk.id}"
   vpc_security_group_ids = ["${aws_security_group.elk_security_group.id}"]
   user_data = "${data.template_file.app_elk.rendered}"
@@ -304,6 +250,9 @@ resource "aws_security_group" "app_security_group" {
   name = "public_security_group"
   description = "security group for app instances"
   vpc_id = "${aws_vpc.group1_vpc.id}"
+  timeouts {
+    create = "5m"
+  }
   ingress {
     from_port   = 80
     to_port     = 80
@@ -328,6 +277,7 @@ resource "aws_security_group" "app_security_group" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
     egress {
       from_port   = 80
       to_port     = 80
@@ -418,10 +368,34 @@ resource "aws_security_group" "app_security_group" {
       protocol = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
+    ingress {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
     egress {
       from_port = 0
       to_port = 0
       protocol = "-1" #-1 is all protocols
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
     tags = {
