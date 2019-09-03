@@ -13,3 +13,7 @@ variable "group1_app_ami" {
 variable "group1_db_ami" {
   default = "ami-03c3a27425d93d571"
 }
+#group 3 ami - matt
+variable "ami" {
+  default = "ami-021e743779bca02b4"
+}

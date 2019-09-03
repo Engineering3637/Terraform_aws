@@ -24,4 +24,3 @@ resource "aws_autoscaling_group" "blue-green-autoscaling" {
       propagate_at_launch = true
     }
 }
- 
