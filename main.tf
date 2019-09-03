@@ -1,7 +1,6 @@
 provider "aws" {
   region = "${var.my_region}"
-  # access_key = "{env.AWS_ACCESS_KEY_ID}"
-  # secret_key = "{env.AWS_SECRET_ACCESS_KEY}"
+
 }
 
 resource "aws_vpc" "group1_vpc" {
@@ -348,48 +347,6 @@ resource "aws_security_group" "app_security_group" {
     name = "elk_security_group"
     description = "security group for ELK"
     vpc_id = "${aws_vpc.group1_vpc.id}"
-    # ingress {
-    #   from_port = 9200
-    #   to_port = 9300
-    #   protocol = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"] #cidr_block for elk sub
-    # }
-    # ingress {
-    #   from_port = 5430
-    #   to_port = 5430
-    #   protocol = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
-    # ingress {
-    #   from_port   = 443
-    #   to_port     = 443
-    #   protocol    = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
-    # ingress {
-    #   from_port   = 22
-    #   to_port     = 22
-    #   protocol    = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
-    # egress {
-    #   from_port = 0
-    #   to_port = 0
-    #   protocol = "-1" #-1 is all protocols
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
-    # egress {
-    #   from_port   = 443
-    #   to_port     = 443
-    #   protocol    = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
-    # egress {
-    #   from_port   = 22
-    #   to_port     = 22
-    #   protocol    = "tcp"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # }
 
     timeouts {
       create = "5m"
