@@ -173,7 +173,7 @@ resource "aws_network_acl" "acl_private_sub" {
 }
 
 resource "aws_instance" "apple_instance" {
-  ami = "${var.group1_app_ami}"
+  ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
@@ -185,7 +185,7 @@ resource "aws_instance" "apple_instance" {
 }
 
 resource "aws_instance" "banana_instance" {
-  ami = "${var.group1_app_ami}"
+  ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
@@ -197,7 +197,7 @@ resource "aws_instance" "banana_instance" {
 }
 
 resource "aws_instance" "grapes_instance" {
-  ami = "${var.group1_app_ami}"
+  ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
@@ -221,7 +221,7 @@ resource "aws_instance" "db_instance" {
 }
 #group 3 instance
 resource "aws_instance" "elk_instance" {
-  ami = "${var.ami}"
+  ami = data.aws_ami.elk_ami.id
   instance_type = "t2.micro"
   key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
@@ -438,4 +438,27 @@ data "template_file" "app_init" {
 
 data "template_file" "app_elk" {
   template = "${file("./Script/app/elk_commands.sh.tpl")}"
+}
+
+#app ami information
+data "aws_ami" "app_ami" {
+  owners = ["self"]
+  most_recent = true
+
+  filter {
+    name = "name"
+    values = ["ENG3637_APP_jenkins-"]
+  }
+
+}
+
+data "aws_ami" "elk_ami" {
+  owners = ["self"]
+  most_recent = true
+
+  filter {
+    name = "name"
+    values = ["ELKServerImageDevOps3637"]
+  }
+
 }
