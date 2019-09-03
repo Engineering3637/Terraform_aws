@@ -91,25 +91,17 @@ resource "aws_network_acl" "acl_public_elk" {
   subnet_ids = ["${aws_subnet.public-subnet-elk.id}"]
 
   ingress {
-    protocol   = "tcp"
+    protocol   = "-1"
     rule_no    = 101
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 9200
-    to_port    = 9300
-  }
-  ingress {
-    protocol   = "tcp"
-    rule_no    = 102
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = 5430
-    to_port    = 5430
+    from_port  = 0
+    to_port    = 0
   }
 
   egress {
-    protocol   = "tcp"
-    rule_no    = 103
+    protocol   = "-1"
+    rule_no    = 107
     action     = "allow"
     cidr_block = "0.0.0.0/0"
     from_port  = 0
@@ -227,7 +219,7 @@ resource "aws_instance" "db_instance" {
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   vpc_security_group_ids = ["${aws_security_group.db_security_group.id}"]
-  user_data = "${data.template_file.app_init.rendered}"
+  #user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "db_instance"
   }
@@ -356,17 +348,63 @@ resource "aws_security_group" "app_security_group" {
     name = "elk_security_group"
     description = "security group for ELK"
     vpc_id = "${aws_vpc.group1_vpc.id}"
-    ingress {
-      from_port = 9200
-      to_port = 9300
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"] #cidr_block for elk sub
+    # ingress {
+    #   from_port = 9200
+    #   to_port = 9300
+    #   protocol = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"] #cidr_block for elk sub
+    # }
+    # ingress {
+    #   from_port = 5430
+    #   to_port = 5430
+    #   protocol = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+    # ingress {
+    #   from_port   = 443
+    #   to_port     = 443
+    #   protocol    = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+    # ingress {
+    #   from_port   = 22
+    #   to_port     = 22
+    #   protocol    = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+    # egress {
+    #   from_port = 0
+    #   to_port = 0
+    #   protocol = "-1" #-1 is all protocols
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+    # egress {
+    #   from_port   = 443
+    #   to_port     = 443
+    #   protocol    = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+    # egress {
+    #   from_port   = 22
+    #   to_port     = 22
+    #   protocol    = "tcp"
+    #   cidr_blocks = ["0.0.0.0/0"]
+    # }
+
+    timeouts {
+      create = "5m"
     }
     ingress {
-      from_port = 5430
-      to_port = 5430
-      protocol = "tcp"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress {
+      from_port   = 1024
+      to_port     = 65535
+      protocol    = "tcp"
+      cidr_blocks = ["10.0.13.0/24"]
     }
     ingress {
       from_port   = 443
@@ -380,24 +418,38 @@ resource "aws_security_group" "app_security_group" {
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
-    egress {
-      from_port = 0
-      to_port = 0
-      protocol = "-1" #-1 is all protocols
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-    egress {
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-    egress {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+
+      egress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+      egress {
+        from_port   = 27017
+        to_port     = 27017
+        protocol    = "tcp"
+        cidr_blocks = ["10.0.13.0/24"]
+      }
+      egress {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+      egress {
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+      egress {
+        from_port   = 1024
+        to_port     = 65535
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+      }
+
     tags = {
       Name  = "elk-security-group"
     }

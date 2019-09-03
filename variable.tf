@@ -15,5 +15,5 @@ variable "group1_db_ami" {
 }
 #group 3 ami - matt
 variable "ami" {
-  default = "ami-09f0478228932d57d"
+  default = "ami-021e743779bca02b4"
 }
