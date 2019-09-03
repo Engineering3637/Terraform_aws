@@ -208,17 +208,17 @@ resource "aws_instance" "grapes_instance" {
   }
 }
 
-resource "aws_instance" "db_instance" {
-  ami = "${var.group1_app_ami}"
-  instance_type = "t2.micro"
-  associate_public_ip_address = true
-  subnet_id = "${aws_subnet.private-subnet-db.id}"
-  vpc_security_group_ids = ["${aws_security_group.db_security_group.id}"]
-  #user_data = "${data.template_file.app_init.rendered}"
-  tags = {
-    Name = "db_instance"
-  }
-}
+# resource "aws_instance" "db_instance" {
+#   ami = "${var.group1_app_ami}"
+#   instance_type = "t2.micro"
+#   associate_public_ip_address = true
+#   subnet_id = "${aws_subnet.private-subnet-db.id}"
+#   vpc_security_group_ids = ["${aws_security_group.db_security_group.id}"]
+#   #user_data = "${data.template_file.app_init.rendered}"
+#   tags = {
+#     Name = "db_instance"
+#   }
+# }
 #group 3 instance
 resource "aws_instance" "elk_instance" {
   ami = data.aws_ami.elk_ami.id

@@ -1,7 +1,7 @@
 
 resource "aws_launch_configuration" "blue-green-launchconfig" {
   name_prefix = "blue-green-launchconfig"
-  image_id      = "${var.group1_app_ami}"
+  image_id      = "ami-0016380d21de9083c"
   instance_type = "t2.micro"
   key_name = "DevOpsEngineering3637"
   security_groups = ["${aws_security_group.app_security_group.id}"]
