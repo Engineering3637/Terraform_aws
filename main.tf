@@ -205,6 +205,12 @@ resource "aws_instance" "apple_instance" {
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "remote-exec" {
+  inline = [
+    "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+    "sudo service filebeat restart"
+  ]
+}
   tags = {
     Name = "apple_instance"
   }
@@ -236,28 +242,30 @@ resource "aws_instance" "grapes_instance" {
   }
 }
 
-# AWS resource for aws instance - ################# First instance
+################################# DB Virtual machine 1 #######################################
+
 resource "aws_instance" "db_instance1" {   # the instance and the name of the Instance
   ami = data.aws_ami.db_ami.id
   associate_public_ip_address = true
   #host_ids = 10.0.15.150
-  #associate_with_private_ip = 10.0.0.10
+  private_ip = "10.0.15.150"
   instance_type = "t2.micro" # instance type = t2.micro
   key_name = "DevOpsEngineering3637"
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]   # the vpc security group created below
+  user_data = "${data.template_file.db_shell.rendered}"
   tags = {          # tag
     Name = "mongo-db1"
   }
+
 }
 
 ################################# DB Virtual machine 2 #######################################
 
-# AWS resource for aws instance - ################# First instance
 resource "aws_instance" "db2_instance" {   # the instance and the name of the Instance
   ami = data.aws_ami.db_ami.id
   associate_public_ip_address = true
-  #host_id = 10.0.15.151
+  private_ip = "10.0.15.151"
   key_name = "DevOpsEngineering3637"
   instance_type = "t2.micro" # instance type = t2.micro
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
@@ -269,11 +277,10 @@ resource "aws_instance" "db2_instance" {   # the instance and the name of the In
 
 ################################# DB Virtual machine 3 #######################################
 
-# AWS resource for aws instance - ################# First instance
 resource "aws_instance" "db3_instance" {
   ami = data.aws_ami.db_ami.id
   associate_public_ip_address = true
-  #host_id = 10.0.15.152
+  private_ip = "10.0.15.152"
   key_name = "DevOpsEngineering3637"
   instance_type = "t2.micro"
   subnet_id = "${aws_subnet.private-subnet-db.id}"
@@ -281,29 +288,6 @@ resource "aws_instance" "db3_instance" {
   tags = {
     Name = "mongo-db3"
   }
-}
-#     static for db instances
-resource "aws_network_interface" "multi-ip" {
-  subnet_id   = "${aws_subnet.private-subnet-db.id}"
-  private_ips = ["10.0.15.150", "10.0.15.151", "10.0.15.152"]
-}
-
-resource "aws_eip" "one" {
-  vpc                       = true
-  network_interface         = "${aws_network_interface.multi-ip.id}"
-  associate_with_private_ip = "10.0.15.150"
-}
-
-resource "aws_eip" "two" {
-  vpc                       = true
-  network_interface         = "${aws_network_interface.multi-ip.id}"
-  associate_with_private_ip = "10.0.15.151"
-}
-
-resource "aws_eip" "three" {
-  vpc                       = true
-  network_interface         = "${aws_network_interface.multi-ip.id}"
-  associate_with_private_ip = "10.0.15.152"
 }
 
 #group 3 instance
@@ -593,6 +577,10 @@ data "template_file" "app_init" {
 
 data "template_file" "app_elk" {
   template = "${file("./Script/app/elk_commands.sh.tpl")}"
+}
+
+data "template_file" "db_shell" {
+  template = "${file("./Script/app/db_commands.sh.tpl")}"
 }
 
 #app ami information
