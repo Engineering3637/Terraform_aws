@@ -1,64 +1,66 @@
+
 provider "aws" {
   region = "${var.my_region}"
 
 }
 
-resource "aws_vpc" "group1_vpc" {
+resource "aws_vpc" "adam_vpc" {
   cidr_block = "10.0.0.0/16"
   instance_tenancy = "default"
   enable_dns_hostnames = true
   tags ={
-    Name = "${var.name}-vpc"
+    Name = "$adam-vpc"
   }
 }
 
-resource "aws_subnet" "public-subnet-alpha" {
+
+resource "aws_subnet" "public-subnet-adam1" {
   # vpc_id = "${var.my_vpc_id}"
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   cidr_block = "10.0.10.0/24"
   availability_zone = "eu-west-1a"
   tags = {
-    Name = "public-subnet-alpha"
+    Name = "public-subnet-adam1"
   }
 }
 
-resource "aws_subnet" "public-subnet-beta" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+resource "aws_subnet" "public-subnet-adam2" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   cidr_block = "10.0.11.0/24"
   availability_zone = "eu-west-1b"
   tags = {
-    Name = "public-subnet-beta"
+    Name = "public-subnet-adam2"
   }
 }
 
-resource "aws_subnet" "public-subnet-gamma" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+resource "aws_subnet" "public-subnet-adam3" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   cidr_block = "10.0.12.0/24"
   availability_zone = "eu-west-1c"
   tags = {
-    Name = "public-subnet-gamma"
+    Name = "public-subnet-adam3"
   }
 }
 
-resource "aws_subnet" "private-subnet-db" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+resource "aws_subnet" "private-subnet-dbadam" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   cidr_block = "10.0.13.0/24"
   tags = {
-    Name = "private-subnet-db"
+    Name = "private-subnet-dbadam"
   }
 }
 
 resource "aws_subnet" "public-subnet-elk" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   cidr_block = "10.0.14.0/24"
   tags = {
     Name = "elk_public_subnet"
   }
 }
 
-resource "aws_network_acl" "acl_public_sub" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
-  subnet_ids = ["${aws_subnet.public-subnet-alpha.id}","${aws_subnet.public-subnet-beta.id}","${aws_subnet.public-subnet-gamma.id}"]
+resource "aws_network_acl" "acl_public_subadam" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
+  subnet_ids = ["${aws_subnet.public-subnet-adam1.id}","${aws_subnet.public-subnet-adam2.id}","${aws_subnet.public-subnet-adam3.id}"]
 
   ingress {
     protocol   = "-1"
@@ -79,14 +81,14 @@ resource "aws_network_acl" "acl_public_sub" {
   }
 
   tags = {
-    Name = "acl_public_sub"
+    Name = "acl_public_subadam"
   }
 }
 
 #elk subnet acl
 
-resource "aws_network_acl" "acl_public_elk" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+resource "aws_network_acl" "acl_public_elk-adam" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   subnet_ids = ["${aws_subnet.public-subnet-elk.id}"]
 
   ingress {
@@ -108,13 +110,31 @@ resource "aws_network_acl" "acl_public_elk" {
   }
 
   tags = {
-    Name = "acl_public_elk"
+    Name = "acl_public_subadam"
   }
 }
 
-resource "aws_network_acl" "acl_private_sub" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
-  subnet_ids = ["${aws_subnet.private-subnet-db.id}"]
+resource "aws_network_acl" "acl_private_sub-adam" {
+  vpc_id = "${aws_vpc.adam_vpc.id}"
+  subnet_ids = ["${aws_subnet.private-subnet-dbadam.id}"]
+
+  ingress {
+      protocol   = "tcp"
+      rule_no    = 113
+      action     = "allow"
+      cidr_block = "10.0.12.0/24"
+      from_port  = 80
+      to_port    = 80
+    }
+
+  egress {
+      protocol   = "tcp"
+      rule_no    = 114
+      action     = "allow"
+      cidr_block = "10.0.10.0/24"
+      from_port  = 1024
+      to_port    = 65535
+    }
 
 
   ingress {
@@ -168,7 +188,7 @@ resource "aws_network_acl" "acl_private_sub" {
     }
 
     tags = {
-      Name = "acl_private_sub"
+      Name = "acl_private_sub-adam"
     }
 }
 
@@ -176,8 +196,8 @@ resource "aws_instance" "apple_instance" {
   ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
-  subnet_id = "${aws_subnet.public-subnet-alpha.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  subnet_id = "${aws_subnet.public-subnet-adam1.id}"
+  vpc_security_group_ids = ["${aws_security_group.app_security_group_adam.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "adam-apple_instance"
@@ -188,8 +208,8 @@ resource "aws_instance" "banana_instance" {
   ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
-  subnet_id = "${aws_subnet.public-subnet-beta.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  subnet_id = "${aws_subnet.public-subnet-adam2.id}"
+  vpc_security_group_ids = ["${aws_security_group.app_security_group_adam.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "adam-banana_instance"
@@ -200,8 +220,8 @@ resource "aws_instance" "grapes_instance" {
   ami = data.aws_ami.app_ami.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
-  subnet_id = "${aws_subnet.public-subnet-gamma.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  subnet_id = "${aws_subnet.public-subnet-adam3.id}"
+  vpc_security_group_ids = ["${aws_security_group.app_security_group_adam.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   tags = {
     Name = "adam-grapes_instance"
@@ -212,7 +232,7 @@ resource "aws_instance" "grapes_instance" {
 #   ami = "${var.group1_app_ami}"
 #   instance_type = "t2.micro"
 #   associate_public_ip_address = true
-#   subnet_id = "${aws_subnet.private-subnet-db.id}"
+#   subnet_id = "${aws_subnet.private-subnet-dbadam-adam.id}"
 #   vpc_security_group_ids = ["${aws_security_group.db_security_group.id}"]
 #   #user_data = "${data.template_file.app_init.rendered}"
 #   tags = {
@@ -233,10 +253,10 @@ resource "aws_instance" "elk_instance" {
   }
 }
 
-resource "aws_security_group" "app_security_group" {
+resource "aws_security_group" "app_security_group_adam" {
   name = "public_security_group"
   description = "security group for app instances"
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   timeouts {
     create = "5m"
   }
@@ -286,7 +306,7 @@ resource "aws_security_group" "app_security_group" {
   resource "aws_security_group" "db_security_group" {
     name        = "db_security_group"
     description = "security group for db"
-    vpc_id      = "${aws_vpc.group1_vpc.id}"
+    vpc_id      = "${aws_vpc.adam_vpc.id}"
 
     ingress {
       from_port   = 27017
@@ -323,7 +343,7 @@ resource "aws_security_group" "app_security_group" {
   resource "aws_security_group" "elk_security_group" {
     name = "elk_security_group"
     description = "security group for ELK"
-    vpc_id = "${aws_vpc.group1_vpc.id}"
+    vpc_id = "${aws_vpc.adam_vpc.id}"
 
     timeouts {
       create = "5m"
@@ -390,14 +410,14 @@ resource "aws_security_group" "app_security_group" {
   }
 
 resource "aws_internet_gateway" "internet_access" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   tags = {
     Name = "main"
   }
 }
 
 resource "aws_route_table" "route_table" {
-  vpc_id = "${aws_vpc.group1_vpc.id}"
+  vpc_id = "${aws_vpc.adam_vpc.id}"
   route {
     cidr_block = "0.0.0.0/0" #any traffic should go through gate way
     gateway_id = "${aws_internet_gateway.internet_access.id}"
@@ -408,22 +428,22 @@ resource "aws_route_table" "route_table" {
 }
 
 resource "aws_route_table_association" "associate_route_table_alpha" {
-  subnet_id = "${aws_subnet.public-subnet-alpha.id}"
+  subnet_id = "${aws_subnet.public-subnet-adam1.id}"
   route_table_id = "${aws_route_table.route_table.id}"
 }
 
 resource "aws_route_table_association" "associate_route_table_beta" {
-  subnet_id = "${aws_subnet.public-subnet-beta.id}"
+  subnet_id = "${aws_subnet.public-subnet-adam2.id}"
   route_table_id = "${aws_route_table.route_table.id}"
 }
 
 resource "aws_route_table_association" "associate_route_table_gamma" {
-  subnet_id = "${aws_subnet.public-subnet-gamma.id}"
+  subnet_id = "${aws_subnet.public-subnet-adam3.id}"
   route_table_id = "${aws_route_table.route_table.id}"
 }
 
 resource "aws_route_table_association" "associate_route_table_db" {
-  subnet_id = "${aws_subnet.private-subnet-db.id}"
+  subnet_id = "${aws_subnet.private-subnet-dbadam.id}"
   route_table_id = "${aws_route_table.route_table.id}"
 }
 

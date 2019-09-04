@@ -1,8 +1,8 @@
 
-resource "aws_elb" "terraform-blue-green" {
+resource "aws_elb" "terraform-blue-green1" {
   name            = "terraform-blue-green-${var.name}"
-  subnets         = ["${aws_subnet.public-subnet-alpha.id}", "${aws_subnet.public-subnet-beta.id}", "${aws_subnet.public-subnet-gamma.id}"]
-   security_groups = ["${aws_security_group.app_security_group.id}"]
+  subnets         = ["${aws_subnet.public-subnet-adam1.id}", "${aws_subnet.public-subnet-adam2.id}", "${aws_subnet.public-subnet-adam3.id}"]
+  security_groups = ["${aws_security_group.app_security_group_adam.id}"]
   #
   instances = ["${aws_instance.apple_instance.id}", "${aws_instance.banana_instance.id}", "${aws_instance.grapes_instance.id}"]
 
@@ -25,5 +25,5 @@ resource "aws_elb" "terraform-blue-green" {
 }
 
 output "load_balancer_dns" {
-  value = "${aws_elb.terraform-blue-green.name}"
+  value = "${aws_elb.terraform-blue-green1.name}"
 }
