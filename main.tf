@@ -205,12 +205,9 @@ resource "aws_instance" "apple_instance" {
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
-  provisioner "remote-exec" {
-  inline = [
-    "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
-    "sudo service filebeat restart"
-  ]
-}
+  provisioner "local-exec" {
+    command = "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip} && sudo service filebeat restart"
+  }
   tags = {
     Name = "apple_instance"
   }
@@ -609,7 +606,6 @@ data "aws_ami" "elk_ami" {
 data "aws_ami" "db_ami" {
   owners = ["self"]
   most_recent = true
-
   filter {
     name = "name"
     values = ["ENG3637_DB_jenkins-"]
