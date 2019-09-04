@@ -206,11 +206,11 @@ resource "aws_instance" "apple_instance" {
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
   provisioner "remote-exec" {
-  inline = [
-    "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
-    "sudo service filebeat restart"
-  ]
-}
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "apple_instance"
   }
@@ -224,6 +224,12 @@ resource "aws_instance" "banana_instance" {
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "remote-exec" {
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "banana_instance"
   }
@@ -237,6 +243,12 @@ resource "aws_instance" "grapes_instance" {
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
   vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "remote-exec" {
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "grapes_instance"
   }
@@ -254,6 +266,12 @@ resource "aws_instance" "db_instance1" {   # the instance and the name of the In
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]   # the vpc security group created below
   user_data = "${data.template_file.db_shell.rendered}"
+  provisioner "remote-exec" {
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {          # tag
     Name = "mongo-db1"
   }
@@ -270,6 +288,12 @@ resource "aws_instance" "db2_instance" {   # the instance and the name of the In
   instance_type = "t2.micro" # instance type = t2.micro
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]   # the vpc security group created below
+  provisioner "remote-exec" {
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {          # tag
     Name = "mongo-db2"
   }
@@ -285,6 +309,12 @@ resource "aws_instance" "db3_instance" {
   instance_type = "t2.micro"
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]
+  provisioner "remote-exec" {
+    inline = [
+      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "mongo-db3"
   }
@@ -299,6 +329,13 @@ resource "aws_instance" "elk_instance" {
   subnet_id ="${aws_subnet.public-subnet-elk.id}"
   vpc_security_group_ids = ["${aws_security_group.elk_security_group.id}"]
   user_data = "${data.template_file.app_elk.rendered}"
+  provisioner "remote-exec" {
+    inline = [
+      "sudo service elasticsearch restart",
+      "sudo service logstash restart",
+      "sudo service kibana restart"
+    ]
+  }
   tags = {
     Name  = "elk-TeamELK"
   }
@@ -309,7 +346,7 @@ resource "aws_security_group" "app_security_group" {
   description = "security group for app instances"
   vpc_id = "${aws_vpc.ENG3637_FP.id}"
   timeouts {
-    create = "5m"
+    create = "20m"
   }
   ingress {
     from_port   = 80
@@ -415,7 +452,7 @@ resource "aws_security_group" "app_security_group" {
     description = "security group for the db"
     vpc_id = "${aws_vpc.ENG3637_FP.id}"
 
-  # inbound traffic
+  #inbound traffic
   # ingress {
   #     from_port   = 27017
   #     to_port     = 27017
@@ -428,12 +465,12 @@ resource "aws_security_group" "app_security_group" {
   #     protocol    = "tcp"
   #     cidr_blocks = ["10.0.11.0/24"]
   #   }
-    # ingress {
-    #   from_port   = 27017
-    #   to_port     = 27017
-    #   protocol    = "tcp"
-    #   cidr_blocks = ["10.0.12.0/24"]
-    # }
+  #   ingress {
+  #     from_port   = 27017
+  #     to_port     = 27017
+  #     protocol    = "tcp"
+  #     cidr_blocks = ["10.0.12.0/24"]
+  #   }
     ingress {
       from_port   = 0
       to_port     = 0
@@ -465,7 +502,7 @@ resource "aws_security_group" "app_security_group" {
     vpc_id = "${aws_vpc.ENG3637_FP.id}"
 
     timeouts {
-      create = "5m"
+      create = "20m"
     }
     ingress {
       from_port   = 80
