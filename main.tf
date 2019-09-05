@@ -43,7 +43,7 @@ resource "aws_subnet" "public-subnet-gamma" {
 
 resource "aws_subnet" "public-subnet-elk" {
   vpc_id = "${aws_vpc.ENG3637_FP.id}"
-  cidr_block = "10.0.14.0/24"
+  cidr_block = "10.0.111.0/24"
   tags = {
     Name = "elk_public_subnet"
   }
@@ -203,17 +203,20 @@ resource "aws_instance" "apple_instance" {
   key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-alpha.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
   provisioner "remote-exec" {
     connection {
         type = "ssh"
-        user = "root"
-        host = "root"
+        user = "ubuntu"
+        host = "${aws_instance.apple_instance.public_dns}"
         private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
       }
     inline = [
-      "ELK_PRIV_IP=${aws_instance.elk_instance.private_ip}",
       "sudo service filebeat restart"
     ]
   }
@@ -228,8 +231,23 @@ resource "aws_instance" "banana_instance" {
   key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-beta.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
+  provisioner "remote-exec" {
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        host = "${aws_instance.banana_instance.public_dns}"
+        private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
+      }
+    inline = [
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "banana_instance"
   }
@@ -241,8 +259,23 @@ resource "aws_instance" "grapes_instance" {
   key_name = "DevOpsEngineering3637"
   associate_public_ip_address = true
   subnet_id = "${aws_subnet.public-subnet-gamma.id}"
-  vpc_security_group_ids = ["${aws_security_group.app_security_group.id}"]
+  vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]
   user_data = "${data.template_file.app_init.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
+  provisioner "remote-exec" {
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        host = "${aws_instance.grapes_instance.public_dns}"
+        private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
+      }
+    inline = [
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {
     Name = "grapes_instance"
   }
@@ -260,6 +293,21 @@ resource "aws_instance" "db_instance1" {   # the instance and the name of the In
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]   # the vpc security group created below
   user_data = "${data.template_file.db_shell.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
+  provisioner "remote-exec" {
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        host = "${aws_instance.db_instance1.public_dns}"
+        private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
+      }
+    inline = [
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {          # tag
     Name = "mongo-db1"
   }
@@ -276,6 +324,22 @@ resource "aws_instance" "db2_instance" {   # the instance and the name of the In
   instance_type = "t2.micro" # instance type = t2.micro
   subnet_id = "${aws_subnet.private-subnet-db.id}"  # the subnet for the instance created below
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]   # the vpc security group created below
+  user_data = "${data.template_file.db_shell.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
+  provisioner "remote-exec" {
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        host = "${aws_instance.db2_instance.public_dns}"
+        private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
+      }
+    inline = [
+      "sudo service filebeat restart"
+    ]
+  }
   tags = {          # tag
     Name = "mongo-db2"
   }
@@ -291,6 +355,22 @@ resource "aws_instance" "db3_instance" {
   instance_type = "t2.micro"
   subnet_id = "${aws_subnet.private-subnet-db.id}"
   vpc_security_group_ids = ["${aws_security_group.db-security-group.id}"]
+  user_data = "${data.template_file.db_shell.rendered}"
+  provisioner "file" {
+    source      = "filebeat.yml"
+    destination = "/etc/filebeat/filebeat.yml"
+  }
+  provisioner "remote-exec" {
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        host = "${aws_instance.db3_instance.public_dns}"
+        private_key = "${file("~/.ssh/DevOpsEngineering3637.pem")}"
+      }
+    inline = [
+      "sudo service filebeat restart",
+    ]
+  }
   tags = {
     Name = "mongo-db3"
   }
@@ -305,6 +385,7 @@ resource "aws_instance" "elk_instance" {
   subnet_id ="${aws_subnet.public-subnet-elk.id}"
   vpc_security_group_ids = ["${aws_security_group.elk_security_group.id}"]
   user_data = "${data.template_file.app_elk.rendered}"
+  private_ip = "10.0.111.143"
   tags = {
     Name  = "elk-TeamELK"
   }
@@ -379,8 +460,8 @@ resource "aws_security_group" "app_security_group" {
   }
 
   #
-  # resource "aws_security_group" "db_security_group" {
-  #   name        = "db_security_group"
+  # resource "aws_security_group" "db-security-group" {
+  #   name        = "db-security-group"
   #   description = "security group for db"
   #   vpc_id      = "${aws_vpc.ENG3637_FP.id}"
   #
@@ -412,7 +493,7 @@ resource "aws_security_group" "app_security_group" {
   #   }
   #
   #   tags = {
-  #     Name = "db_security_groups"
+  #     Name = "db-security-groups"
   #   }
   # }
 #db-security-group
@@ -461,7 +542,7 @@ resource "aws_security_group" "app_security_group" {
       cidr_blocks = ["0.0.0.0/0"]
     }
     tags = {
-        Name = "db_security_groups"
+        Name = "db-security-groups"
       }
     }
 
